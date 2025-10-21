@@ -1,0 +1,70 @@
+############ Crear Proyecto ############
+npm create vite@latest
+
+##### Moverse a la capeta del proyecto #######
+
+```
+Need to install the following packages:
+create-vite@8.0.2
+Ok to proceed? (y) y
+
+
+> npx
+> create-vite
+
+|
+o  Project name:
+|  isolated-workshop
+|
+o  Select a framework:
+|  React
+|
+o  Select a variant:
+|  TypeScript
+|
+o  Use rolldown-vite (Experimental)?:
+|  No
+|
+o  Install with npm and start now?
+|  Yes
+```
+
+##### Instalar tailwindCSS #####
+npm install tailwindcss @tailwindcss/vite
+
+####### Configura el agregado (plugin) de Vite #######
+//// Agregar en la configuración de Vite.
+
+import { defineConfig } from 'vite'
+import tailwindcss from '@tailwindcss/vite'   <------
+
+export default defineConfig({
+  plugins: [
+    tailwindcss(),    <------
+  ],
+})
+
+####### Importar Tailwind CSS ########
+///// Agregar un @import a tu archivo CSS que importa Tailwind CSS.
+///// Es el archivo donde Tailwind inyecta todas sus utilidades antes de compilar el CSS final. En Vite es index.css
+@import "tailwindcss";
+
+####### Iniciar ######
+npm run dev
+
+####### Start using Tailwind in your HTML #########
+Asegúrate de que tu compilación de CSS esté incluido en el '<head>' (tu framework debería manejar esto por ti), luego inicia usando las clases de utilidades de Tailwind para estilizar tu contenido.
+
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="/src/style.css" rel="stylesheet">  <------------
+</head>
+<body>
+  <h1 class="text-3xl font-bold underline">   <-----------
+    Hello world!    <-----------
+  </h1>    <-----------
+</body>
+</html>
