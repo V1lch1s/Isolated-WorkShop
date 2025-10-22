@@ -47,7 +47,7 @@ export default defineConfig({
 ####### Importar Tailwind CSS ########
 ///// Agregar un @import a tu archivo CSS que importa Tailwind CSS.
 ///// Es el archivo donde Tailwind inyecta todas sus utilidades antes de compilar el CSS final. En Vite es index.css
-@import "tailwindcss";
+@import "tailwindcss";  <------ SIEMPRE COMO PRIMERA LINEA
 
 ####### Iniciar ######
 npm run dev
