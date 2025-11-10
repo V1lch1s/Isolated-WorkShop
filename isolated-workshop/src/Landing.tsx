@@ -2,11 +2,104 @@ import tomatoLogo from "./assets/tomato.svg"; {/* Se usa el componente */}
 import Typewriter from "./components/Typewriter";
 import GetStarted from "./components/get-started";
 import Footer from "./components/Footer";
-import './Landing.css'
+import StickyFeatureShowcase from "./components/StickyFeatureShowcase";
+import type { StickyShowcaseProps } from "./components/StickyFeatureShowcase";
+import './Landing.css';
 // sass
 function Landing() {
+  const showcaseData: StickyShowcaseProps = {
+    mainTitle: "Teamwork solutions for high-performing teams",
+    breakpoint: 1024,
+    features: [
+      {
+        id: "feature-1",
+        title: "Dream it, plan it, launch it",
+        description: "The #1 tool for agile teams is now for all teams. Plan, track, and deliver your biggest ideas together.",
+        media: {
+          desktop: {
+            type: "video",
+            src: "/demos/feature1.webp", // Asegúrate de que las rutas a los archivos sean correctas
+            alt: "Planning and tracking demonstration"
+          },
+          mobile: {
+            type: "image",
+            src: "/images/feature1-mobile.jpg",
+            alt: "Planning feature"
+          }
+        },
+        colors: {
+          primary: "#f00000ff",
+          accent: "#585858ff"
+        }
+      },
+      {
+        id: "feature-2",
+        title: "Scale your knowledge",
+        description: "Connect and consolidate scattered docs and disconnected teammates in one, central source of truth.",
+        media: {
+          desktop: {
+            type: "video",
+            src: "/demos/feature2.webp",
+            alt: "Knowledge management demonstration"
+          },
+          mobile: {
+            type: "image",
+            src: "/images/feature2-mobile.jpg",
+            alt: "Knowledge scaling"
+          }
+        },
+        colors: {
+          primary: "#f00000ff",
+          accent: "#585858ff"
+        }
+      },
+      {
+        id: "feature-3",
+        title: "Dream it, plan it, launch it",
+        description: "The #1 tool for agile teams is now for all teams. Plan, track, and deliver your biggest ideas together.",
+        media: {
+          desktop: {
+            type: "video",
+            src: "/demos/feature1.webp", // Asegúrate de que las rutas a los archivos sean correctas
+            alt: "Planning and tracking demonstration"
+          },
+          mobile: {
+            type: "image",
+            src: "/images/feature1-mobile.jpg",
+            alt: "Planning feature"
+          }
+        },
+        colors: {
+          primary: "#f00000ff",
+          accent: "#585858ff"
+        }
+      },
+      {
+        id: "feature-4",
+        title: "Scale your knowledge",
+        description: "Connect and consolidate scattered docs and disconnected teammates in one, central source of truth.",
+        media: {
+          desktop: {
+            type: "video",
+            src: "/demos/feature2.webp",
+            alt: "Knowledge management demonstration"
+          },
+          mobile: {
+            type: "image",
+            src: "/images/feature2-mobile.jpg",
+            alt: "Knowledge scaling"
+          }
+        },
+        colors: {
+          primary: "#f00000ff",
+          accent: "#585858ff"
+        }
+      }
+      // Puedes añadir más features aquí
+    ]
+  };
   return (
-    <div className="min-h-screen bg-black flex flex-col overflow-hidden">
+    <div className="min-h-screen flex flex-col bg-black overflow-hidden">
       {/* Adornos */}
         <div
           aria-hidden="true"
@@ -117,7 +210,7 @@ function Landing() {
         /> */}
 
         {/* Contenido de la vista */}
-        <div className="mx-auto max-w-2xl py-32 sm:py-48 lg:py-56">    
+        <div className="mx-auto max-w-4xl py-32 sm:py-48 lg:py-56">    
           <div className="justify-center items-center text-center">
             <div className="flex justify-center">
               <img alt="" src={tomatoLogo} className="h-30 w-30"/>
@@ -158,9 +251,15 @@ function Landing() {
             </div>
           </div>
 
-          <div>Content</div>
+          <div>
+            <StickyFeatureShowcase
+              mainTitle={showcaseData.mainTitle}
+              features={showcaseData.features}
+              breakpoint={showcaseData.breakpoint}
+            />
+          </div>
 
-          <div className="flex flex-col items-center min-[650px]:flex-row min-[650px]:justify-center min-[650px]:items-center gap-3">
+          <div className="flex flex-col items-center mt-30px min-[650px]:flex-row min-[650px]:justify-center min-[650px]:items-center gap-3">
             <h2 className="text-3xl font-mono text-center tracking-tight text-balance text-white sm:text-7sm">
               Organiza tus ideas con TomaTask
             </h2>
