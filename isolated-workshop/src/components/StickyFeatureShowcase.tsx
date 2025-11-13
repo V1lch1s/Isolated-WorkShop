@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-// Definición de tipos basada en tu especificación
+// Definición de tipos
 export interface FeatureSection {
   id: string;
   title: string;
@@ -23,7 +23,6 @@ export interface FeatureSection {
   };
 }
 
-
 export interface StickyShowcaseProps {
   mainTitle: string;
   features: FeatureSection[];
@@ -37,19 +36,26 @@ const StickyFeatureShowcase: React.FC<StickyShowcaseProps> = ({
 }) => {
   const [activeFeatureIndex, setActiveFeatureIndex] = useState(0);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth > breakpoint);
-  const [isAtBottom, setIsAtBottom] = useState(false);
+  const [containerOffset, setContainerOffset] = useState({ left: 0, width: 0 }); // Posición del contenedor principal
+  const [isInSection, setIsInSection] = useState(false);
 
   const featureRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const observerRef = useRef<IntersectionObserver | null>(null); // Ref para el observer
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const sectionObserverRef = useRef<IntersectionObserver | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null); // Referencia al contenedor principal
 
   // Manejar el cambio de tamaño de la ventana
   useEffect(() => {
     const handleResize = () => {
       const newIsDesktop = window.innerWidth > breakpoint;
       setIsDesktop(newIsDesktop);
-      // Reiniciar el índice si cambiamos a móvil
       if (!newIsDesktop) {
-          setActiveFeatureIndex(0);
+        setActiveFeatureIndex(0);
+      }
+      // Recalcular offset si cambia el tamaño
+      if (newIsDesktop && containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        setContainerOffset({ left: rect.left + window.scrollX, width: rect.width });
       }
     };
 
@@ -57,138 +63,198 @@ const StickyFeatureShowcase: React.FC<StickyShowcaseProps> = ({
     return () => window.removeEventListener('resize', handleResize);
   }, [breakpoint]);
 
+  // Calcular offset del contenedor principal al montar y si cambia
+  useEffect(() => {
+    if (isDesktop && containerRef.current) {
+      const updateOffset = () => {
+        const rect = containerRef.current!.getBoundingClientRect();
+        setContainerOffset({ left: rect.left + window.scrollX, width: rect.width });
+      };
+
+      updateOffset(); // Inicial
+      window.addEventListener('scroll', updateOffset, { passive: true });
+      return () => window.removeEventListener('scroll', updateOffset);
+    }
+  }, [isDesktop]);
+
   // Observer para detectar la sección activa en desktop
   useEffect(() => {
-    // Limpia el observer anterior si existe
     if (observerRef.current) {
       observerRef.current.disconnect();
     }
 
     if (!isDesktop || features.length === 0) {
-      setIsAtBottom(false); // Resetear el estado al cambiar a móvil si no hay features
       return;
     }
 
-    // Configura el nuevo observer
     const observer = new IntersectionObserver(
       (entries) => {
         let visibleIndex = -1;
-        let isLastVisible = false;
+        let closestToTop = Infinity;
 
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const index = featureRefs.current.indexOf(entry.target as HTMLDivElement);
             if (index !== -1) {
-              if (visibleIndex === -1) visibleIndex = index; // Toma el primero que se intersecta
-              if (index === features.length - 1) isLastVisible = true; // Marca si es el último
+              const rect = entry.boundingClientRect;
+              if (rect.top < closestToTop) {
+                closestToTop = rect.top;
+                visibleIndex = index;
+              }
             }
           }
         });
 
         if (visibleIndex !== -1) {
           setActiveFeatureIndex(visibleIndex);
-          setIsAtBottom(isLastVisible); // Actualiza isAtBottom basado en si el último está visible
         }
       },
-      {
-        // rootMargin: '0px 0px -70% 0px', // Puedes ajustar este valor si quieres que se active antes o después
-        threshold: 0.1, // El elemento debe estar al menos un 10% visible
-      }
+      { threshold: 0.1 }
     );
 
-    // Observa cada ref
     featureRefs.current.forEach((ref) => {
       if (ref) observer.observe(ref);
     });
 
-    // Guarda la instancia del observer en la ref
     observerRef.current = observer;
 
-    // Limpia al desmontar o cambiar dependencias
     return () => {
       if (observerRef.current) {
         observerRef.current.disconnect();
       }
     };
-  }, [isDesktop, features.length]);  // Se vuelve a ejecutar si cambia isDesktop o features.length
+  }, [isDesktop, features.length]);
+
+  useEffect(() => {
+    if (sectionObserverRef.current) {
+      sectionObserverRef.current.disconnect();
+    }
+
+    if (!isDesktop) {
+      setIsInSection(false);
+      return;
+    }
+
+    const sectionObserver = new IntersectionObserver(
+      ([entry]) => {
+        setIsInSection(entry.isIntersecting);
+        // Opcional: Puedes usar isIntersecting para saber si está entrando o saliendo
+        // console.log("isIntersecting:", entry.isIntersecting);
+      },
+      {
+        threshold: 0.01, // Dispara si cualquier parte está visible
+        // Cambia rootMargin: detecta cuando entra/sale del viewport
+        rootMargin: '-20px 0px -80% 0px', // Opcional: activar antes de que salga completamente
+        // Simplemente:
+        // rootMargin: '0px', // Activa cuando entra, desactiva cuando sale completamente
+      }
+    );
+
+    if (containerRef.current) {
+      sectionObserver.observe(containerRef.current);
+    }
+
+    sectionObserverRef.current = sectionObserver;
+
+    return () => {
+      if (sectionObserverRef.current) {
+        sectionObserverRef.current.disconnect();
+      }
+    };
+  }, [isDesktop]);
 
   const activeFeature = features[activeFeatureIndex];
 
   if (!activeFeature) {
-    return null; // O un mensaje de error si no hay features
+    return null;
   }
 
   // Layout para Desktop
   if (isDesktop) {
+    // Calcular posiciones fijas basadas en el contenedor
+    const titleLeft = containerOffset.left;
+    const titleWidth = containerOffset.width;
+    const videoLeft = titleLeft + (containerOffset.width / 2) + 48; // Aproximadamente w-1/2 + pl-15 (60px)
+    const videoWidth = (containerOffset.width / 2) - 48; // Aproximadamente w-1/2 - pl-15
+
     return (
-      <div className="w-full max-w-14xl mx-0 px-0 py-10">
-        {/* Título Sticky */}
-        <div className="mb-12">
-          <h2 className="text-2xl md:text-3xl font-bold text-center text-[#FFFFFF]">
-            {mainTitle}
-          </h2>
-        </div>
-
-        <div className="flex flex-row gap-8 md:gap-12">
-          {/* Columna Izquierda - Lista de Características */}
-          <div className="w-full md:w-1/2 space-y-16 pr-15 md:space-y-24">
-            {features.map((feature, index) => (
-              <div
-                key={feature.id}
-                ref={(el) => {featureRefs.current[index] = el}}
-                className="py-4" // Espaciado para el observer
-              >
-                <h3 className="text-[#FFFFFF] text-xl md:text-2xl font-bold mb-2">
-                  {feature.title}
-                </h3>
-                <p className="text-base md:text-lg text-[#FFFFFF]">
-                  {feature.description}
-                </p>
-              </div>
-            ))}
-          </div>
-
-          {/* Columna Derecha - Contenedor Sticky */}
-          <div className="w-full md:w-1/2 pl-15">
-            {/* Contenedor sticky */}
-            <div
-              className={`sticky top-8 transition-opacity duration-300 ${
-                isAtBottom ? 'opacity-0 pointer-events-none' : 'opacity-100'
-              }`}
-            >
-              <div className="p-4 md:p-4 rounded-lg shadow-lg">
-                <div className="relative aspect-video"> {/* Mantiene proporción 16:9 */}
-                  {activeFeature.media.desktop.type === 'video' ? (
-                    <iframe
-                      width="100%"
-                      height="100%"
-                      src={activeFeature.media.desktop.src}
-                      title={activeFeature.title}
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      className="absolute inset-0 w-full h-full rounded-lg border-0"
-                    />
-                    /*<video
-                      autoPlay
-                      muted
-                      loop
-                      playsInline
-                      className="w-full h-auto rounded-lg object-cover max-h-[500px]"
-                      src={activeFeature.media.desktop.src}
-                    />*/
-                  ) : (
-                    <img
-                      src={activeFeature.media.desktop.src}
-                      alt={activeFeature.media.desktop.alt}
-                      className="w-full h-full rounded-lg object-cover"
-                    />
-                  )}
+      <>
+        {/* Contenedor invisible para que el contenido de la izquierda fluya normalmente */}
+        <div ref={containerRef} className="w-full max-w-14xl mx-0 px-0 py-10 relative">
+          {/* Espacio reservado para elementos fijos para no superponer contenido */}
+          <div className="h-20"></div> {/* Espacio para el título fijo */}
+          <div className="flex flex-row gap-8 md:gap-12">
+            <div className="w-full md:w-1/2 space-y-16 pr-15 md:space-y-24">
+              {features.map((feature, index) => (
+                <div
+                  key={feature.id}
+                  ref={(el) => { featureRefs.current[index] = el; }}
+                  className="py-4"
+                >
+                  <h3 className="text-[#FFFFFF] text-xl md:text-2xl font-bold mb-2">
+                    {feature.title}
+                  </h3>
+                  <p className="text-base md:text-lg text-[#FFFFFF]">
+                    {feature.description}
+                  </p>
                 </div>
-              </div>
+              ))}
+            </div>
+            {/* Espacio reservado para el video fijo */}
+            <div className="w-full md:w-1/2 pl-15 invisible">
+              {/* Reservado*/}
             </div>
           </div>
         </div>
-      </div>
+
+        {/* Título Fijo */}
+        {isInSection && (
+          <div
+            className="fixed top-0 z-100 bg-[#000000] flex justify-center items-center py-4"
+            style={{ left: titleLeft, width: titleWidth }}
+          >
+            <h2 className="text-2xl md:text-3xl font-bold text-center text-[#FFFFFF]">
+              {mainTitle}
+            </h2>
+          </div>
+        )}
+
+        {/* Contenedor del Video Fijo */}
+        {isInSection && (
+          <div
+            className="fixed z-100"
+            style={{ top: 80, left: videoLeft, width: videoWidth, height: 'calc(100vh - 80px - 2rem)' }}
+          >
+            <div className="p-4 md:p-4 rounded-lg shadow-lg h-full flex items-center justify-center">
+              <div className="relative aspect-video w-full">
+                {activeFeature.media.desktop.type === 'video' ? (
+                  <iframe
+                    src={activeFeature.media.desktop.src}
+                    title={activeFeature.title}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="absolute inset-0 w-full h-full rounded-lg border-0"
+                  />
+                  /*<video
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className="w-full h-auto rounded-lg object-cover max-h-[500px]"
+                    src={activeFeature.media.desktop.src}
+                  />*/
+                ) : (
+                  <img
+                    src={activeFeature.media.desktop.src}
+                    alt={activeFeature.media.desktop.alt}
+                    className="w-full h-full rounded-lg object-cover"
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </>
     );
   }
 
@@ -222,6 +288,7 @@ const StickyFeatureShowcase: React.FC<StickyShowcaseProps> = ({
 };
 
 export default StickyFeatureShowcase;
+
 
 /*
 Uso en App.tsx:
