@@ -18,12 +18,12 @@ function Landing() {
         media: {
           desktop: {
             type: "video",
-            src: "/demos/feature1.webp", // Asegúrate de que las rutas a los archivos sean correctas
+            src: "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1", // Asegúrate de que las rutas a los archivos sean correctas
             alt: "Planning and tracking demonstration"
           },
           mobile: {
             type: "image",
-            src: "/images/feature1-mobile.jpg",
+            src: "https://www.buenprovecho.hn/wp-content/uploads/2020/09/tomate-1024x680-1.jpg",
             alt: "Planning feature"
           }
         },
@@ -39,12 +39,12 @@ function Landing() {
         media: {
           desktop: {
             type: "video",
-            src: "/demos/feature2.webp",
+            src: "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1",
             alt: "Knowledge management demonstration"
           },
           mobile: {
             type: "image",
-            src: "/images/feature2-mobile.jpg",
+            src: "https://misremedios.com/wp-content/uploads/2016/03/tomate-rodajas-cortado-700x466.jpg",
             alt: "Knowledge scaling"
           }
         },
@@ -60,12 +60,12 @@ function Landing() {
         media: {
           desktop: {
             type: "video",
-            src: "/demos/feature1.webp", // Asegúrate de que las rutas a los archivos sean correctas
+            src: "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1", // Asegúrate de que las rutas a los archivos sean correctas
             alt: "Planning and tracking demonstration"
           },
           mobile: {
             type: "image",
-            src: "/images/feature1-mobile.jpg",
+            src: "https://misremedios.com/wp-content/uploads/2016/02/Tomates2-700x465.jpg",
             alt: "Planning feature"
           }
         },
@@ -81,12 +81,12 @@ function Landing() {
         media: {
           desktop: {
             type: "video",
-            src: "/demos/feature2.webp",
+            src: "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1",
             alt: "Knowledge management demonstration"
           },
           mobile: {
             type: "image",
-            src: "/images/feature2-mobile.jpg",
+            src: "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fmedia.ooreka.fr%2Fpublic%2Fimage%2Fplant%2F265%2FmainImage-source-10006168.jpg&f=1&nofb=1&ipt=ebafd0ffc6308bd796422b7e371b1c77237121c03424dbdb081b4e4bbf8ac667",
             alt: "Knowledge scaling"
           }
         },
@@ -196,8 +196,7 @@ function Landing() {
                        opacity-70"
           />
         </div>
-        
-      <div className="relative isolate px-6 pt-14 lg:px-8">
+      <div className="relative isolate px-0 pt-14 lg:px-0">
         {/* Polígono de prueba */}
         {/*<div
           className="absolute top-20 left-1/2 -translate-x-1/2 z-10"
@@ -210,7 +209,7 @@ function Landing() {
         /> */}
 
         {/* Contenido de la vista */}
-        <div className="mx-auto max-w-4xl py-32 sm:py-48 lg:py-56">    
+        <div className="mx-auto max-w-5xl py-32 sm:py-48 lg:py-56">    
           <div className="justify-center items-center text-center">
             <div className="flex justify-center">
               <img alt="" src={tomatoLogo} className="h-30 w-30"/>
@@ -251,15 +250,13 @@ function Landing() {
             </div>
           </div>
 
-          <div>
-            <StickyFeatureShowcase
-              mainTitle={showcaseData.mainTitle}
-              features={showcaseData.features}
-              breakpoint={showcaseData.breakpoint}
-            />
-          </div>
+          <StickyFeatureShowcase
+            mainTitle={showcaseData.mainTitle}
+            features={showcaseData.features}
+            breakpoint={showcaseData.breakpoint}
+          />
 
-          <div className="flex flex-col items-center mt-30px min-[650px]:flex-row min-[650px]:justify-center min-[650px]:items-center gap-3">
+          <div className="flex flex-col items-center mt-60px min-[650px]:flex-row min-[650px]:justify-center min-[650px]:items-center gap-3">
             <h2 className="text-3xl font-mono text-center tracking-tight text-balance text-white sm:text-7sm">
               Organiza tus ideas con TomaTask
             </h2>
@@ -276,7 +273,7 @@ function Landing() {
             />
           </div>
         </div>
-        <div className="min-h-screen flex flex-col">
+        <div className="flex flex-col">
           <Footer />
         </div>
       </div>

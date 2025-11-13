@@ -121,10 +121,17 @@ const StickyFeatureShowcase: React.FC<StickyShowcaseProps> = ({
   // Layout para Desktop
   if (isDesktop) {
     return (
-      <div className="w-full max-w-14xl mx-auto px-10 py-10 md:px-8">
+      <div className="w-full max-w-14xl mx-0 px-0 py-10">
+        {/* Título Sticky */}
+        <div className="mb-12">
+          <h2 className="text-2xl md:text-3xl font-bold text-center text-[#FFFFFF]">
+            {mainTitle}
+          </h2>
+        </div>
+
         <div className="flex flex-row gap-8 md:gap-12">
           {/* Columna Izquierda - Lista de Características */}
-          <div className="w-full md:w-1/2 space-y-16 md:space-y-24">
+          <div className="w-full md:w-1/2 space-y-16 pr-15 md:space-y-24">
             {features.map((feature, index) => (
               <div
                 key={feature.id}
@@ -142,33 +149,41 @@ const StickyFeatureShowcase: React.FC<StickyShowcaseProps> = ({
           </div>
 
           {/* Columna Derecha - Contenedor Sticky */}
-          <div
-            className={`w-full md:w-1/2 sticky top-8 transition-opacity duration-300 ${
-              isAtBottom ? 'opacity-0 pointer-events-none' : 'opacity-100'
-            }`}
-            style={{ height: 'fit-content' }} // Asegura que no colapse si el contenido es más corto
-          >
-            <div className="bg-white p-4 md:p-6 rounded-xl shadow-lg">
-              <h2 className="text-2xl md:text-3xl font-bold text-center mb-6">
-                {mainTitle}
-              </h2>
-              <div className="relative">
-                {activeFeature.media.desktop.type === 'video' ? (
-                  <video
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    className="w-full h-auto rounded-lg object-cover max-h-[500px]"
-                    src={activeFeature.media.desktop.src}
-                  />
-                ) : (
-                  <img
-                    src={activeFeature.media.desktop.src}
-                    alt={activeFeature.media.desktop.alt}
-                    className="w-full h-auto rounded-lg object-cover max-h-[500px]"
-                  />
-                )}
+          <div className="w-full md:w-1/2 pl-15">
+            {/* Contenedor sticky */}
+            <div
+              className={`sticky top-8 transition-opacity duration-300 ${
+                isAtBottom ? 'opacity-0 pointer-events-none' : 'opacity-100'
+              }`}
+            >
+              <div className="p-4 md:p-4 rounded-lg shadow-lg">
+                <div className="relative aspect-video"> {/* Mantiene proporción 16:9 */}
+                  {activeFeature.media.desktop.type === 'video' ? (
+                    <iframe
+                      width="100%"
+                      height="100%"
+                      src={activeFeature.media.desktop.src}
+                      title={activeFeature.title}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      className="absolute inset-0 w-full h-full rounded-lg border-0"
+                    />
+                    /*<video
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                      className="w-full h-auto rounded-lg object-cover max-h-[500px]"
+                      src={activeFeature.media.desktop.src}
+                    />*/
+                  ) : (
+                    <img
+                      src={activeFeature.media.desktop.src}
+                      alt={activeFeature.media.desktop.alt}
+                      className="w-full h-full rounded-lg object-cover"
+                    />
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -180,7 +195,7 @@ const StickyFeatureShowcase: React.FC<StickyShowcaseProps> = ({
   // Layout para Mobile
   return (
     <div className="w-full max-w-4xl mx-auto px-4 pb-16">
-      <h2 className="text-2xl text-[#FFFFFF] md:text-3xl font-bold text-center mb-8">
+      <h2 className="text-2xl text-[#FFFFFF] md:text-3xl font-bold text-center mb-15">
         {mainTitle}
       </h2>
       <div className="space-y-16">
