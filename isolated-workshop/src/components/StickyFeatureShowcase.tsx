@@ -7,7 +7,7 @@ export interface FeatureSection {
   description: string;
   media: {
     desktop: {
-      type: 'video';
+      type: 'video' | 'image'; // Tipos válidos
       src: string; // Video .webp o mp4
       alt: string;
     };
@@ -36,13 +36,12 @@ const StickyFeatureShowcase: React.FC<StickyShowcaseProps> = ({
 }) => {
   const [activeFeatureIndex, setActiveFeatureIndex] = useState(0);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth > breakpoint);
-  const [containerOffset, setContainerOffset] = useState({ left: 0, width: 0 }); // Posición del contenedor principal
-  const [isInSection, setIsInSection] = useState(false);
+  const [isStickyActive, setIsStickyActive] = useState(false);
 
   const featureRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const sectionObserverRef = useRef<IntersectionObserver | null>(null);
-  const containerRef = useRef<HTMLDivElement | null>(null); // Referencia al contenedor principal
 
   // Manejar el cambio de tamaño de la ventana
   useEffect(() => {
@@ -52,37 +51,14 @@ const StickyFeatureShowcase: React.FC<StickyShowcaseProps> = ({
       if (!newIsDesktop) {
         setActiveFeatureIndex(0);
       }
-      // Recalcular offset si cambia el tamaño
-      if (newIsDesktop && containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect();
-        setContainerOffset({ left: rect.left + window.scrollX, width: rect.width });
-      }
     };
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [breakpoint]);
 
-  // Calcular offset del contenedor principal al montar y si cambia
-  useEffect(() => {
-    if (isDesktop && containerRef.current) {
-      const updateOffset = () => {
-        const rect = containerRef.current!.getBoundingClientRect();
-        setContainerOffset({ left: rect.left + window.scrollX, width: rect.width });
-      };
-
-      updateOffset(); // Inicial
-      window.addEventListener('scroll', updateOffset, { passive: true });
-      return () => window.removeEventListener('scroll', updateOffset);
-    }
-  }, [isDesktop]);
-
   // Observer para detectar la sección activa en desktop
   useEffect(() => {
-    if (observerRef.current) {
-      observerRef.current.disconnect();
-    }
-
     if (!isDesktop || features.length === 0) {
       return;
     }
@@ -94,7 +70,7 @@ const StickyFeatureShowcase: React.FC<StickyShowcaseProps> = ({
 
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            const index = featureRefs.current.indexOf(entry.target as HTMLDivElement);
+            const index = featureRefs.current.findIndex(ref => ref === entry.target);
             if (index !== -1) {
               const rect = entry.boundingClientRect;
               if (rect.top < closestToTop) {
@@ -109,7 +85,7 @@ const StickyFeatureShowcase: React.FC<StickyShowcaseProps> = ({
           setActiveFeatureIndex(visibleIndex);
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1, rootMargin: '-50px 0px 0px 0px' }
     );
 
     featureRefs.current.forEach((ref) => {
@@ -125,35 +101,24 @@ const StickyFeatureShowcase: React.FC<StickyShowcaseProps> = ({
     };
   }, [isDesktop, features.length]);
 
+  // Observer para detectar si estamos dentro de la sección
   useEffect(() => {
-    if (sectionObserverRef.current) {
-      sectionObserverRef.current.disconnect();
-    }
-
-    if (!isDesktop) {
-      setIsInSection(false);
+    if (!isDesktop || !containerRef.current) {
+      setIsStickyActive(false);
       return;
     }
 
     const sectionObserver = new IntersectionObserver(
       ([entry]) => {
-        setIsInSection(entry.isIntersecting);
-        // Opcional: Puedes usar isIntersecting para saber si está entrando o saliendo
-        // console.log("isIntersecting:", entry.isIntersecting);
+        setIsStickyActive(entry.isIntersecting);
       },
       {
-        threshold: 0.01, // Dispara si cualquier parte está visible
-        // Cambia rootMargin: detecta cuando entra/sale del viewport
-        rootMargin: '-20px 0px -80% 0px', // Opcional: activar antes de que salga completamente
-        // Simplemente:
-        // rootMargin: '0px', // Activa cuando entra, desactiva cuando sale completamente
+        threshold: 0.01,
+        rootMargin: '0px'
       }
     );
 
-    if (containerRef.current) {
-      sectionObserver.observe(containerRef.current);
-    }
-
+    sectionObserver.observe(containerRef.current);
     sectionObserverRef.current = sectionObserver;
 
     return () => {
@@ -169,92 +134,64 @@ const StickyFeatureShowcase: React.FC<StickyShowcaseProps> = ({
     return null;
   }
 
-  // Layout para Desktop
+  // Layout para Desktop - CORREGIDO con sticky dentro del contenedor
   if (isDesktop) {
-    // Calcular posiciones fijas basadas en el contenedor
-    const titleLeft = containerOffset.left;
-    const titleWidth = containerOffset.width;
-    const videoLeft = titleLeft + (containerOffset.width / 2) + 48; // Aproximadamente w-1/2 + pl-15 (60px)
-    const videoWidth = (containerOffset.width / 2) - 48; // Aproximadamente w-1/2 - pl-15
-
     return (
-      <>
-        {/* Contenedor invisible para que el contenido de la izquierda fluya normalmente */}
-        <div ref={containerRef} className="w-full max-w-14xl mx-0 px-0 py-10 relative">
-          {/* Espacio reservado para elementos fijos para no superponer contenido */}
-          <div className="h-20"></div> {/* Espacio para el título fijo */}
-          <div className="flex flex-row gap-8 md:gap-12">
-            <div className="w-full md:w-1/2 space-y-16 pr-15 md:space-y-24">
-              {features.map((feature, index) => (
-                <div
-                  key={feature.id}
-                  ref={(el) => { featureRefs.current[index] = el; }}
-                  className="py-4"
-                >
-                  <h3 className="text-[#FFFFFF] text-xl md:text-2xl font-bold mb-2">
-                    {feature.title}
-                  </h3>
-                  <p className="text-base md:text-lg text-[#FFFFFF]">
-                    {feature.description}
-                  </p>
-                </div>
-              ))}
-            </div>
-            {/* Espacio reservado para el video fijo */}
-            <div className="w-full md:w-1/2 pl-15 invisible">
-              {/* Reservado*/}
-            </div>
-          </div>
-        </div>
-
-        {/* Título Fijo */}
-        {isInSection && (
-          <div
-            className="fixed top-0 z-100 bg-[#000000] flex justify-center items-center py-4"
-            style={{ left: titleLeft, width: titleWidth }}
-          >
+      <div ref={containerRef} className="w-full max-w-7xl mx-auto px-4 py-10 relative">
+        {/* Contenedor sticky para el título */}
+        <div 
+          className={`sticky top-4 transition-all duration-300 ${
+            isStickyActive ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
+        >
+          <div className="bg-[#2D1200] rounded-lg py-3 px-4">
             <h2 className="text-2xl md:text-3xl font-bold text-center text-[#FFFFFF]">
               {mainTitle}
             </h2>
           </div>
-        )}
+        </div>
 
-        {/* Contenedor del Video Fijo */}
-        {isInSection && (
-          <div
-            className="fixed z-100"
-            style={{ top: 80, left: videoLeft, width: videoWidth, height: 'calc(100vh - 80px - 2rem)' }}
-          >
-            <div className="p-4 md:p-4 rounded-lg shadow-lg h-full flex items-center justify-center">
-              <div className="relative aspect-video w-full">
-                {activeFeature.media.desktop.type === 'video' ? (
-                  <iframe
-                    src={activeFeature.media.desktop.src}
-                    title={activeFeature.title}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    className="absolute inset-0 w-full h-full rounded-lg border-0"
-                  />
-                  /*<video
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    className="w-full h-auto rounded-lg object-cover max-h-[500px]"
-                    src={activeFeature.media.desktop.src}
-                  />*/
-                ) : (
-                  <img
-                    src={activeFeature.media.desktop.src}
-                    alt={activeFeature.media.desktop.alt}
-                    className="w-full h-full rounded-lg object-cover"
-                  />
-                )}
+        <div className="flex flex-row gap-8 md:gap-12 mt-8">
+          {/* Contenido izquierdo - scroll normal */}
+          <div className="w-full md:w-1/2 space-y-8 md:space-y-12">
+            {features.map((feature, index) => (
+              <div
+                key={feature.id}
+                ref={(el) => { featureRefs.current[index] = el; }}
+                className="py-6"
+              >
+                <h3 className="text-[#FFFFFF] text-xl md:text-2xl font-bold mb-2">
+                  {feature.title}
+                </h3>
+                <p className="text-base md:text-lg text-[#FFFFFF]">
+                  {feature.description}
+                </p>
               </div>
+            ))}
+          </div>
+
+          {/* Panel derecho sticky */}
+          <div className="w-full md:w-1/2 pl-12 sticky top-24 h-[calc(100vh-180px)]">
+            <div className="w-full aspect-video">
+              {activeFeature.media.desktop.type === 'video' ? (
+                <iframe
+                  src={activeFeature.media.desktop.src}
+                  title={activeFeature.title}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="w-full h-full rounded-lg border-0"
+                />
+              ) : (
+                <img
+                  src={activeFeature.media.desktop.src}
+                  alt={activeFeature.media.desktop.alt}
+                  className="w-full h-full rounded-lg object-cover"
+                />
+              )}
             </div>
           </div>
-        )}
-      </>
+        </div>
+      </div>
     );
   }
 

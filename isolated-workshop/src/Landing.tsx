@@ -13,7 +13,7 @@ function Landing() {
     features: [
       {
         id: "feature-1",
-        title: "Dream it, plan it, launch it",
+        title: "Lolly Bomb - Little Big",
         description: "The #1 tool for agile teams is now for all teams. Plan, track, and deliver your biggest ideas together.",
         media: {
           desktop: {
@@ -34,12 +34,12 @@ function Landing() {
       },
       {
         id: "feature-2",
-        title: "Scale your knowledge",
+        title: "Numa Numa",
         description: "Connect and consolidate scattered docs and disconnected teammates in one, central source of truth.",
         media: {
           desktop: {
             type: "video",
-            src: "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1",
+            src: "https://www.youtube.com/embed/EwTZ2xpQwpA?si=d8W43Q6kD25IAHH4?autoplay=1",
             alt: "Knowledge management demonstration"
           },
           mobile: {
@@ -55,12 +55,12 @@ function Landing() {
       },
       {
         id: "feature-3",
-        title: "Dream it, plan it, launch it",
+        title: "Never Gonna Give You Up - Rick Astley",
         description: "The #1 tool for agile teams is now for all teams. Plan, track, and deliver your biggest ideas together.",
         media: {
           desktop: {
             type: "video",
-            src: "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1", // Asegúrate de que las rutas a los archivos sean correctas
+            src: "https://www.youtube.com/embed/FBnAZnfNB6U?si=jPyoH_GgglmrnMJj?autoplay=1", // Asegúrate de que las rutas a los archivos sean correctas
             alt: "Planning and tracking demonstration"
           },
           mobile: {
@@ -76,12 +76,12 @@ function Landing() {
       },
       {
         id: "feature-4",
-        title: "Scale your knowledge",
+        title: "Chocolate Rain - TayZonday",
         description: "Connect and consolidate scattered docs and disconnected teammates in one, central source of truth.",
         media: {
           desktop: {
             type: "video",
-            src: "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1",
+            src: "https://www.youtube.com/embed/ILtz5nX3_fc?si=ajHYp5fYfPPGEXe-?autoplay=1",
             alt: "Knowledge management demonstration"
           },
           mobile: {
@@ -239,7 +239,7 @@ function Landing() {
             />
 
             {/* Call To Action */}
-            <div className="mt-10 px-0 py-20 flex items-center justify-center gap-x-6">
+            <div className="mt-10 px-0 py-40 flex items-center justify-center gap-x-6">
               <GetStarted 
                 texto="Empezar ahora"
                 destino="/login"
@@ -256,21 +256,23 @@ function Landing() {
             breakpoint={showcaseData.breakpoint}
           />
 
-          <div className="flex flex-col items-center mt-60px min-[650px]:flex-row min-[650px]:justify-center min-[650px]:items-center gap-3">
-            <h2 className="text-3xl font-mono text-center tracking-tight text-balance text-white sm:text-7sm">
-              Organiza tus ideas con TomaTask
-            </h2>
-            <img alt="Tomato Logo" src={tomatoLogo} className="hidden h-9 w-9 min-[650px]:block"/>
-          </div>
-          
-          <div className="mt-10 px-0 py-0 flex items-center justify-center gap-x-6">
-            <GetStarted 
-              texto="Empezar ahora"
-              destino="/login"
-              tamaño="lg"
-              variante="particles"
-              mostrarAura={true}
-            />
+          <div className="pt-20">
+            <div className="flex flex-col items-center mt-60px min-[650px]:flex-row min-[650px]:justify-center min-[650px]:items-center gap-3">
+              <h2 className="text-3xl font-mono text-center tracking-tight text-balance text-white sm:text-7sm">
+                Organiza tus ideas con TomaTask
+              </h2>
+              <img alt="Tomato Logo" src={tomatoLogo} className="hidden h-9 w-9 min-[650px]:block"/>
+            </div>
+            
+            <div className="mt-10 px-0 py-0 flex items-center justify-center gap-x-6">
+              <GetStarted 
+                texto="Empezar ahora"
+                destino="/login"
+                tamaño="lg"
+                variante="particles"
+                mostrarAura={true}
+              />
+            </div>
           </div>
         </div>
         <div className="flex flex-col">
