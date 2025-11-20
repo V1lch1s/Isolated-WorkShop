@@ -1,19 +1,19 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from "react";
 
-// Definición de tipos
+// Types --------------------------------------------------------
 export interface FeatureSection {
   id: string;
   title: string;
   description: string;
   media: {
     desktop: {
-      type: 'video' | 'image'; // Tipos válidos
-      src: string; // Video .webp o mp4
+      type: "video" | "image";
+      src: string;
       alt: string;
     };
     mobile: {
-      type: 'image';
-      src: string; // Imagen estática
+      type: "image";
+      src: string;
       alt: string;
     };
   };
@@ -26,166 +26,173 @@ export interface FeatureSection {
 export interface StickyShowcaseProps {
   mainTitle: string;
   features: FeatureSection[];
-  breakpoint?: number; // default: 1024
+  breakpoint?: number;
 }
 
+// Component ------------------------------------------------------
 const StickyFeatureShowcase: React.FC<StickyShowcaseProps> = ({
   mainTitle,
   features,
   breakpoint = 1024,
 }) => {
-  const [activeFeatureIndex, setActiveFeatureIndex] = useState(0);
-  const [isDesktop, setIsDesktop] = useState(window.innerWidth > breakpoint);
-  const [isStickyActive, setIsStickyActive] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= breakpoint);
+  const [activeIndex, setActiveIndex] = useState(0);
 
-  const featureRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const observerRef = useRef<IntersectionObserver | null>(null);
-  const sectionObserverRef = useRef<IntersectionObserver | null>(null);
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const stickyUnitRef = useRef<HTMLDivElement | null>(null);
+  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  // Manejar el cambio de tamaño de la ventana
+  const [stickyMode, setStickyMode] =
+    useState<"sticky" | "fixed" | "bottom">("sticky");
+
+  // Detect resize ------------------------------------------------
   useEffect(() => {
-    const handleResize = () => {
-      const newIsDesktop = window.innerWidth > breakpoint;
-      setIsDesktop(newIsDesktop);
-      if (!newIsDesktop) {
-        setActiveFeatureIndex(0);
-      }
+    const onResize = () => {
+      const desktop = window.innerWidth >= breakpoint;
+      setIsDesktop(desktop);
+      if (!desktop) setActiveIndex(0);
     };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
   }, [breakpoint]);
 
-  // Observer para detectar la sección activa en desktop
+  // Detect active feature via IntersectionObserver ---------------
   useEffect(() => {
-    if (!isDesktop || features.length === 0) {
-      return;
-    }
+    if (!isDesktop) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        let visibleIndex = -1;
-        let closestToTop = Infinity;
+        let cand = -1;
+        let minY = Infinity;
 
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            const index = featureRefs.current.findIndex(ref => ref === entry.target);
-            if (index !== -1) {
-              const rect = entry.boundingClientRect;
-              if (rect.top < closestToTop) {
-                closestToTop = rect.top;
-                visibleIndex = index;
-              }
+            const idx = itemRefs.current.indexOf(entry.target as HTMLDivElement);
+            if (idx !== -1 && entry.boundingClientRect.top < minY) {
+              minY = entry.boundingClientRect.top;
+              cand = idx;
             }
           }
         });
 
-        if (visibleIndex !== -1) {
-          setActiveFeatureIndex(visibleIndex);
-        }
+        if (cand !== -1) setActiveIndex(cand);
       },
-      { threshold: 0.1, rootMargin: '-50px 0px 0px 0px' }
+      { threshold: 0.3 }
     );
 
-    featureRefs.current.forEach((ref) => {
-      if (ref) observer.observe(ref);
-    });
-
-    observerRef.current = observer;
-
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
+    itemRefs.current.forEach((ref) => ref && observer.observe(ref));
+    return () => observer.disconnect();
   }, [isDesktop, features.length]);
 
-  // Observer para detectar si estamos dentro de la sección
+  // Control del sticky que debe quedarse dentro del wrapper ------
   useEffect(() => {
-    if (!isDesktop || !containerRef.current) {
-      setIsStickyActive(false);
-      return;
-    }
+    if (!isDesktop || !wrapperRef.current || !stickyUnitRef.current) return;
 
-    const sectionObserver = new IntersectionObserver(
-      ([entry]) => {
-        setIsStickyActive(entry.isIntersecting);
-      },
-      {
-        threshold: 0.01,
-        rootMargin: '0px'
-      }
-    );
+    const onScroll = () => {
+      const wrapper = wrapperRef.current!;
+      const sticky = stickyUnitRef.current!;
 
-    sectionObserver.observe(containerRef.current);
-    sectionObserverRef.current = sectionObserver;
+      const rect = wrapper.getBoundingClientRect();
 
-    return () => {
-      if (sectionObserverRef.current) {
-        sectionObserverRef.current.disconnect();
+      const stickyHeight = sticky.offsetHeight;
+      const wrapperTop = rect.top;
+      const wrapperBottom = rect.bottom;
+
+      const stickyBottomLimit = wrapperBottom - stickyHeight - 40; // margen inferior
+
+      if (wrapperTop > 20) {
+        setStickyMode("sticky"); // Arriba normal
+      } else if (wrapperTop <= 20 && wrapperBottom > stickyHeight + 40) {
+        setStickyMode("fixed"); // Sigue al usuario
+      } else {
+        setStickyMode("bottom"); // Se queda abajo
       }
     };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+
+    return () => window.removeEventListener("scroll", onScroll);
   }, [isDesktop]);
 
-  const activeFeature = features[activeFeatureIndex];
-
-  if (!activeFeature) {
-    return null;
-  }
-
-  // Layout para Desktop - CORREGIDO con sticky dentro del contenedor
+  // --------------------------------------------------------------
+  // DESKTOP LAYOUT -----------------------------------------------
+  // --------------------------------------------------------------
   if (isDesktop) {
+    const active = features[activeIndex];
+
     return (
-      <div ref={containerRef} className="w-full max-w-7xl mx-auto px-4 py-10 relative">
-        {/* Contenedor sticky para el título */}
-        <div 
-          className={`sticky top-4 transition-all duration-300 ${
-            isStickyActive ? 'opacity-100' : 'opacity-0 pointer-events-none'
-          }`}
-        >
-          <div className="bg-[#2D1200] rounded-lg py-3 px-4">
-            <h2 className="text-2xl md:text-3xl font-bold text-center text-[#FFFFFF]">
-              {mainTitle}
-            </h2>
-          </div>
+      <div
+        ref={wrapperRef}
+        className="relative w-full pt-32 pb-40 max-w-[1400px] mx-auto"
+      >
+        {/* === Capa 4 — Features (scroll normal) === */}
+        <div className="relative z-0 w-full max-w-[500px] space-y-28">
+          {features.map((f, i) => (
+            <div
+              key={f.id}
+              ref={(el) => {
+                itemRefs.current[i] = el;
+              }}
+              className="text-white"
+            >
+              <h3 className="text-2xl font-bold mb-2">{f.title}</h3>
+              <p className="text-lg opacity-90">{f.description}</p>
+            </div>
+          ))}
         </div>
 
-        <div className="flex flex-row gap-8 md:gap-12 mt-8">
-          {/* Contenido izquierdo - scroll normal */}
-          <div className="w-full md:w-1/2 space-y-8 md:space-y-12">
-            {features.map((feature, index) => (
-              <div
-                key={feature.id}
-                ref={(el) => { featureRefs.current[index] = el; }}
-                className="py-6"
-              >
-                <h3 className="text-[#FFFFFF] text-xl md:text-2xl font-bold mb-2">
-                  {feature.title}
-                </h3>
-                <p className="text-base md:text-lg text-[#FFFFFF]">
-                  {feature.description}
-                </p>
+        {/* === Capa 2 y 3 — Overlay Sticky Unit (Título + Observer + Video) === */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div
+            ref={stickyUnitRef}
+            className={`
+              pointer-events-auto w-[900px] mx-auto grid grid-cols-2 gap-10
+              transition-all duration-0
+              ${stickyMode === "sticky" ? "sticky top-10" : ""}
+              ${stickyMode === "fixed" ? "fixed top-10 left-1/2 -translate-x-1/2" : ""}
+              ${stickyMode === "bottom" ? "absolute bottom-10 left-1/2 -translate-x-1/2" : ""}
+            `}
+          >
+            {/* === Título centrado encima === */}
+            <div className="col-span-2">
+              <div className="bg-[#2D1200] text-white py-4 px-5 rounded-lg text-center mb-6">
+                <h2 className="text-3xl font-bold">{mainTitle}</h2>
               </div>
-            ))}
-          </div>
+            </div>
 
-          {/* Panel derecho sticky */}
-          <div className="w-full md:w-1/2 pl-12 sticky top-24 h-[calc(100vh-180px)]">
-            <div className="w-full aspect-video">
-              {activeFeature.media.desktop.type === 'video' ? (
+            {/* === Observer (columna izquierda del grid) === */}
+            {/* Invisible para que no se vea y respetar el espacio */}
+            <div className="invisible flex items-start justify-center">
+              <div className="bg-white/10 text-white p-4 rounded-lg">
+                Feature: {active.title}
+              </div>
+            </div>
+
+            {/* === Video (columna derecha del grid) === */}
+            <div className="w-full aspect-video rounded-lg overflow-hidden">
+              {active.media.desktop.type === "video" ? (
                 <iframe
-                  src={activeFeature.media.desktop.src}
-                  title={activeFeature.title}
+                  src={active.media.desktop.src}
+                  title={active.title}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
-                  className="w-full h-full rounded-lg border-0"
+                  className="w-full h-full border-0"
                 />
+                /*<video
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  className="w-full h-auto rounded-lg object-cover max-h-[500px]"
+                  src={active.media.desktop.src}
+                />*/
               ) : (
                 <img
-                  src={activeFeature.media.desktop.src}
-                  alt={activeFeature.media.desktop.alt}
-                  className="w-full h-full rounded-lg object-cover"
+                  src={active.media.desktop.src}
+                  alt={active.media.desktop.alt}
+                  className="w-full h-full object-cover"
                 />
               )}
             </div>
@@ -195,28 +202,26 @@ const StickyFeatureShowcase: React.FC<StickyShowcaseProps> = ({
     );
   }
 
-  // Layout para Mobile
+  // --------------------------------------------------------------
+  // MOBILE LAYOUT -------------------------------------------------
+  // --------------------------------------------------------------
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 pb-16">
-      <h2 className="text-2xl text-[#FFFFFF] md:text-3xl font-bold text-center mb-15">
+    <div className="w-full max-w-3xl mx-auto px-5 py-16">
+      <h2 className="text-3xl font-bold text-center text-white mb-14">
         {mainTitle}
       </h2>
-      <div className="space-y-16">
-        {features.map((feature) => (
-          <div key={feature.id} className="flex flex-col items-center text-center">
-            <h3 className="text-xl font-bold text-[#FFFFFF] mb-4">
-              {feature.title}
-            </h3>
-            <p className="text-base text-[#FFFFFF] mb-6">
-              {feature.description}
-            </p>
-            <div className="w-full max-w-md">
-              <img
-                src={feature.media.mobile.src}
-                alt={feature.media.mobile.alt}
-                className="w-full h-auto rounded-lg object-cover"
-              />
-            </div>
+
+      <div className="space-y-20">
+        {features.map((f) => (
+          <div key={f.id} className="text-center">
+            <h3 className="text-2xl font-bold text-white mb-3">{f.title}</h3>
+            <p className="text-lg text-white/90 mb-6">{f.description}</p>
+
+            <img
+              src={f.media.mobile.src}
+              alt={f.media.mobile.alt}
+              className="w-full rounded-lg object-cover"
+            />
           </div>
         ))}
       </div>
@@ -225,7 +230,6 @@ const StickyFeatureShowcase: React.FC<StickyShowcaseProps> = ({
 };
 
 export default StickyFeatureShowcase;
-
 
 /*
 Uso en App.tsx:

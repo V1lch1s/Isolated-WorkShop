@@ -46,9 +46,9 @@ const Footer: React.FC<FooterProps> = () => {
           <div className="text-gray-400 font-medium text-sm space-y-3">
             <div className="flex items-center gap-1 mb-4">
               <h2 className="text-white text-lg font-normal uppercase tracking-wider border-b-2 border-red-500/90 pb-2">
-                Inform
+                Information
               </h2>
-              <span className="text-white font-normal uppercase tracking-wider">ation</span>
+              <span className="text-white font-normal uppercase tracking-wider"></span>
             </div>
             <p>Registration Start Date</p>
             <p>Registration End Date</p>
@@ -65,31 +65,28 @@ const Footer: React.FC<FooterProps> = () => {
             <p>23 Dec 2021 to 31 May 2022</p>
           </div>
 
-          {/* About Exam & Support */}
+          {/* Support */}
           <div className="flex flex-col justify-between gap-8">
-            {/* About Exam */}
-            <div className="text-gray-400 font-medium text-sm space-y-3">
-              <div className="flex items-center gap-1 mb-4">
-                <h2 className="text-white text-lg font-normal uppercase tracking-wider border-b-2 border-red-500/90 pb-2">
-                  About
-                </h2>
-                <span className="text-white font-normal uppercase tracking-wider">exam</span>
-              </div>
-              <p><a href="#" className="hover:text-gray-300">Apply</a></p>
-              <p><a href="#" className="hover:text-gray-300">Eligibility</a></p>
-              <p><a href="#" className="hover:text-gray-300">Application Process</a></p>
-              <p><a href="#" className="hover:text-gray-300">Syllabus</a></p>
-            </div>
-
             {/* Support */}
             <div className="text-gray-400 font-medium text-sm space-y-3 pt-4">
               <div className="flex items-center gap-1 mb-4">
                 <h2 className="text-white text-lg font-normal uppercase tracking-wider border-b-2 border-red-500/90 pb-2">
-                  suppor
+                  support
                 </h2>
-                <span className="text-white font-normal uppercase tracking-wider">t</span>
+                <span className="text-white font-normal uppercase tracking-wider"></span>
               </div>
-              <p><a href="#" className="hover:text-gray-300">FAQ&apos;s</a></p>
+              <p className="flex items-center gap-2 hover:text-gray-300">
+                <FontAwesomeIcon icon={faPhone} className="text-lg" />
+                <a href="tel:9946948000">
+                  +52 1 639 117 5750 (<span className="text-xs">General Enquiry</span>)
+                </a>
+              </p>
+              <p className="flex items-center gap-2 hover:text-gray-300">
+                <FontAwesomeIcon icon={faPhone} className="text-lg" />
+                <a href="tel:9946947000">
+                  +52 1 81 1603 0190 (<span className="text-xs">Technical Support: TomaTask</span>)
+                </a>
+              </p>
             </div>
           </div>
 
@@ -97,9 +94,9 @@ const Footer: React.FC<FooterProps> = () => {
           <div className="text-gray-400 font-medium text-sm space-y-4">
             <div className="flex items-center gap-1 mb-4">
               <h2 className="text-white text-lg font-normal uppercase tracking-wider border-b-2 border-red-500/90 pb-2">
-                get in t
+                Let's Meet
               </h2>
-              <span className="text-white font-normal uppercase tracking-wider">ouch</span>
+              <span className="text-white font-normal uppercase tracking-wider"></span>
             </div>
 
             <div className="flex items-start gap-2">
@@ -107,33 +104,17 @@ const Footer: React.FC<FooterProps> = () => {
               <div>
                 <strong className="text-gray-300 block">Our Company</strong>
                 <address className="not-italic mt-1 leading-relaxed">
-                  NH-70 Chandigarh-Ludhiana Highway,<br />
-                  Mohali, Punjab (INDIA)<br />
-                  General Helpline No: +91 987-6543-210
+                  Garza Sada, Paseo Tecnológico<br />
+                  Monterrey, Nuevo León (México)<br />
+                  General Helpline No: +52 1 921 222 3320
                 </address>
               </div>
             </div>
 
             <div className="space-y-2 mt-3">
               <p className="flex items-center gap-2 hover:text-gray-300">
-                <FontAwesomeIcon icon={faPhone} className="text-lg" />
-                <a href="tel:1800180088800">1800 1800 88800</a>
-              </p>
-              <p className="flex items-center gap-2 hover:text-gray-300">
-                <FontAwesomeIcon icon={faPhone} className="text-lg" />
-                <a href="tel:9946948000">
-                  9946948000 (<span className="text-xs">General Enquiry</span>)
-                </a>
-              </p>
-              <p className="flex items-center gap-2 hover:text-gray-300">
-                <FontAwesomeIcon icon={faPhone} className="text-lg" />
-                <a href="tel:9946947000">
-                  9946947000 (<span className="text-xs">Technical Support: CUCET</span>)
-                </a>
-              </p>
-              <p className="flex items-center gap-2 hover:text-gray-300">
                 <FontAwesomeIcon icon={faEnvelope} className="text-lg" />
-                <a href="mailto:admin@Company.in">admin@Company.in</a>
+                <a href="mailto:admin@Company.in">tomatillos@toma.co</a>
               </p>
             </div>
           </div>
@@ -158,7 +139,7 @@ const Footer: React.FC<FooterProps> = () => {
 
         {/* Copyright */}
         <div className="text-center text-gray-500 text-sm pb-4">
-          &copy; {new Date().getFullYear()} CUCET. All rights reserved.
+          &copy; {new Date().getFullYear()} Tomatillos. All rights reserved.
         </div>
       </div>
     </footer>
