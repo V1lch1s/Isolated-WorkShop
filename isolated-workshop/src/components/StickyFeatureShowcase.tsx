@@ -38,6 +38,8 @@ const StickyFeatureShowcase: React.FC<StickyShowcaseProps> = ({
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= breakpoint);
   const [activeIndex, setActiveIndex] = useState(0);
 
+  // Referencias a contenedores (div)
+  const observerRef = useRef<HTMLDivElement | null>(null);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const stickyUnitRef = useRef<HTMLDivElement | null>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -45,45 +47,83 @@ const StickyFeatureShowcase: React.FC<StickyShowcaseProps> = ({
   const [stickyMode, setStickyMode] =
     useState<"sticky" | "fixed" | "bottom">("sticky");
 
-  // Detect resize ------------------------------------------------
-  useEffect(() => {
-    const onResize = () => {
-      const desktop = window.innerWidth >= breakpoint;
-      setIsDesktop(desktop);
-      if (!desktop) setActiveIndex(0);
-    };
-
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, [breakpoint]);
-
   // Detect active feature via IntersectionObserver ---------------
   useEffect(() => {
-    if (!isDesktop) return;
+    if (!isDesktop || !wrapperRef.current || !observerRef.current) return;
 
+    const observerElement = observerRef.current;
+    let ticking = false;
+
+    const updateActiveFeature = () => {
+      if (!observerElement) return;
+
+      const observerRect = observerElement.getBoundingClientRect();
+      const observerCenterY = observerRect.top + observerRect.height / 2;
+
+      let closestIndex = -1;
+      let minDistance = Infinity;
+
+      itemRefs.current.forEach((el, idx) => {
+        if (!el) return;
+
+        const rect = el.getBoundingClientRect();
+        
+        // Solo considerar elementos visibles en el viewport
+        if (rect.bottom < 0 || rect.top > window.innerHeight) return;
+
+        const featureCenterY = rect.top + rect.height / 2;
+        const distance = Math.abs(featureCenterY - observerCenterY);
+
+        if (distance < minDistance) {
+          minDistance = distance;
+          closestIndex = idx;
+        }
+      });
+
+      if (closestIndex !== -1 && closestIndex !== activeIndex) {
+        setActiveIndex(closestIndex);
+      }
+    };
+
+    // ----------- throttle via requestAnimationFrame -----------
+    const scheduleUpdate = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          updateActiveFeature();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    // ----------- Intersection Observer -----------
     const observer = new IntersectionObserver(
       (entries) => {
-        let cand = -1;
-        let minY = Infinity;
-
-        entries.forEach((entry) => {
+        entries.forEach(entry => {
           if (entry.isIntersecting) {
-            const idx = itemRefs.current.indexOf(entry.target as HTMLDivElement);
-            if (idx !== -1 && entry.boundingClientRect.top < minY) {
-              minY = entry.boundingClientRect.top;
-              cand = idx;
-            }
+            scheduleUpdate();
           }
         });
-
-        if (cand !== -1) setActiveIndex(cand);
       },
-      { threshold: 0.3 }
+      {
+        rootMargin: "0px",
+        threshold: 0.1 // 10% de visibilidad
+      }
     );
 
     itemRefs.current.forEach((ref) => ref && observer.observe(ref));
-    return () => observer.disconnect();
-  }, [isDesktop, features.length]);
+
+    // Escuchar scroll para actualizaciones continuas
+    window.addEventListener("scroll", scheduleUpdate, { passive: true });
+    window.addEventListener("resize", scheduleUpdate);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("scroll", scheduleUpdate);
+      window.removeEventListener("resize", scheduleUpdate);
+    };
+        
+  }, [isDesktop, features.length, activeIndex]); // Añadido activeIndex como dependencia
 
   // Control del sticky que debe quedarse dentro del wrapper ------
   useEffect(() => {
@@ -94,19 +134,16 @@ const StickyFeatureShowcase: React.FC<StickyShowcaseProps> = ({
       const sticky = stickyUnitRef.current!;
 
       const rect = wrapper.getBoundingClientRect();
-
       const stickyHeight = sticky.offsetHeight;
       const wrapperTop = rect.top;
       const wrapperBottom = rect.bottom;
 
-      const stickyBottomLimit = wrapperBottom - stickyHeight - 40; // margen inferior
-
       if (wrapperTop > 20) {
-        setStickyMode("sticky"); // Arriba normal
+        setStickyMode("sticky");
       } else if (wrapperTop <= 20 && wrapperBottom > stickyHeight + 40) {
-        setStickyMode("fixed"); // Sigue al usuario
+        setStickyMode("fixed");
       } else {
-        setStickyMode("bottom"); // Se queda abajo
+        setStickyMode("bottom");
       }
     };
 
@@ -128,7 +165,7 @@ const StickyFeatureShowcase: React.FC<StickyShowcaseProps> = ({
         className="relative w-full pt-32 pb-40 max-w-[1400px] mx-auto"
       >
         {/* === Capa 4 — Features (scroll normal) === */}
-        <div className="relative z-0 w-full max-w-[500px] space-y-28">
+        <div className="relative z-0 w-full max-w-[500px] space-y-50">
           {features.map((f, i) => (
             <div
               key={f.id}
@@ -137,6 +174,8 @@ const StickyFeatureShowcase: React.FC<StickyShowcaseProps> = ({
               }}
               className="text-white"
             >
+              
+              {/* Contenido visible */}
               <h3 className="text-2xl font-bold mb-2">{f.title}</h3>
               <p className="text-lg opacity-90">{f.description}</p>
             </div>
@@ -163,10 +202,12 @@ const StickyFeatureShowcase: React.FC<StickyShowcaseProps> = ({
             </div>
 
             {/* === Observer (columna izquierda del grid) === */}
-            {/* Invisible para que no se vea y respetar el espacio */}
-            <div className="invisible flex items-start justify-center">
-              <div className="bg-white/10 text-white p-4 rounded-lg">
-                Feature: {active.title}
+            <div
+              ref={observerRef} // Referencia al observer
+              className="flex items-start justify-center h-full"
+            > {/* Invisible para que no se vea y respetar el espacio */}
+              <div className="bg-white/10 text-white p-4 rounded-lg invisible">
+                Observer Target
               </div>
             </div>
 
@@ -174,7 +215,10 @@ const StickyFeatureShowcase: React.FC<StickyShowcaseProps> = ({
             <div className="w-full aspect-video rounded-lg overflow-hidden">
               {active.media.desktop.type === "video" ? (
                 <iframe
-                  src={active.media.desktop.src}
+                  key={`video-${activeIndex}`} // Forzar re-render con índice único
+                  src={active.media.desktop.src.includes('?')
+                    ? `${active.media.desktop.src}&autoplay=1` // &mute=1
+                    : `${active.media.desktop.src}?autoplay=1`}
                   title={active.title}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
@@ -187,7 +231,7 @@ const StickyFeatureShowcase: React.FC<StickyShowcaseProps> = ({
                   playsInline
                   className="w-full h-auto rounded-lg object-cover max-h-[500px]"
                   src={active.media.desktop.src}
-                />*/
+                /> /**/
               ) : (
                 <img
                   src={active.media.desktop.src}
@@ -245,7 +289,7 @@ const showcaseData: StickyShowcaseProps = {
     {
       id: "feature-1",
       title: "Dream it, plan it, launch it",
-      description: "The #1 tool for agile teams is now for all teams. Plan, track, and deliver your biggest ideas together.",
+      description: "The #1 tool for agile teams is now for all teams. Plan, track, and deliver your biggest ideas together. The #1 tool for agile teams is now for all teams. Plan, track, and deliver your biggest ideas together.",
       media: {
         desktop: {
           type: "video",
@@ -266,7 +310,7 @@ const showcaseData: StickyShowcaseProps = {
     {
       id: "feature-2",
       title: "Scale your knowledge",
-      description: "Connect and consolidate scattered docs and disconnected teammates in one, central source of truth.",
+      description: "Connect and consolidate scattered docs and disconnected teammates in one, central source of truth. Connect and consolidate scattered docs and disconnected teammates in one, central source of truth.",
       media: {
         desktop: {
           type: "video",

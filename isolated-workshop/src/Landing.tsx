@@ -14,11 +14,11 @@ function Landing() {
       {
         id: "feature-1",
         title: "Lolly Bomb - Little Big",
-        description: "The #1 tool for agile teams is now for all teams. Plan, track, and deliver your biggest ideas together.",
+        description: "The #1 tool for agile teams is now for all teams. Plan, track, and deliver your biggest ideas together. The #1 tool for agile teams is now for all teams. Plan, track, and deliver your biggest ideas together.",
         media: {
           desktop: {
             type: "video",
-            src: "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1", // Asegúrate de que las rutas a los archivos sean correctas
+            src: "https://www.youtube.com/embed/FBnAZnfNB6U", // Eliminar el Session Identifier de Youtube (?si=)
             alt: "Planning and tracking demonstration"
           },
           mobile: {
@@ -31,11 +31,11 @@ function Landing() {
       {
         id: "feature-2",
         title: "Numa Numa",
-        description: "Connect and consolidate scattered docs and disconnected teammates in one, central source of truth.",
+        description: "Connect and consolidate scattered docs and disconnected teammates in one, central source of truth. Connect and consolidate scattered docs and disconnected teammates in one, central source of truth.",
         media: {
           desktop: {
             type: "video",
-            src: "https://www.youtube.com/embed/EwTZ2xpQwpA?si=d8W43Q6kD25IAHH4?autoplay=1",
+            src: "https://www.youtube.com/embed/ILtz5nX3_fc", // Eliminar el Session Identifier de Youtube (?si=)
             alt: "Knowledge management demonstration"
           },
           mobile: {
@@ -48,11 +48,11 @@ function Landing() {
       {
         id: "feature-3",
         title: "Never Gonna Give You Up - Rick Astley",
-        description: "The #1 tool for agile teams is now for all teams. Plan, track, and deliver your biggest ideas together.",
+        description: "The #1 tool for agile teams is now for all teams. Plan, track, and deliver your biggest ideas together. The #1 tool for agile teams is now for all teams. Plan, track, and deliver your biggest ideas together.",
         media: {
           desktop: {
             type: "video",
-            src: "https://www.youtube.com/embed/FBnAZnfNB6U?si=jPyoH_GgglmrnMJj?autoplay=1", // Asegúrate de que las rutas a los archivos sean correctas
+            src: "https://www.youtube.com/embed/dQw4w9WgXcQ", // Eliminar el Session Identifier de Youtube (?si=)
             alt: "Planning and tracking demonstration"
           },
           mobile: {
@@ -65,11 +65,11 @@ function Landing() {
       {
         id: "feature-4",
         title: "Chocolate Rain - TayZonday",
-        description: "Connect and consolidate scattered docs and disconnected teammates in one, central source of truth.",
+        description: "Connect and consolidate scattered docs and disconnected teammates in one, central source of truth. Connect and consolidate scattered docs and disconnected teammates in one, central source of truth.",
         media: {
           desktop: {
             type: "video",
-            src: "https://www.youtube.com/embed/ILtz5nX3_fc?si=ajHYp5fYfPPGEXe?autoplay=1",
+            src: "https://www.youtube.com/embed/EwTZ2xpQwpA", // Eliminar el Session Identifier de Youtube (?si=)
             alt: "Knowledge management demonstration"
           },
           mobile: {
