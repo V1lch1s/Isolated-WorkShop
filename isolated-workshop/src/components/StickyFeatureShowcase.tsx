@@ -225,12 +225,13 @@ const StickyFeatureShowcase: React.FC<StickyShowcaseProps> = ({
                   className="w-full h-full border-0"
                 />
                 /*<video
+                  key={active.id} // Para reiniciar el video al cambiar de Feature
                   autoPlay
                   muted
                   loop
                   playsInline
-                  className="w-full h-auto rounded-lg object-cover max-h-[500px]"
                   src={active.media.desktop.src}
+                  aria-label={active.title}
                 /> /**/
               ) : (
                 <img
