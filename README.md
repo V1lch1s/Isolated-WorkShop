@@ -1,5 +1,5 @@
 # 🛬 Landing Components
-### ¿Has sentido que el flujo de desarrollo es asfixiante? ¿sientes la necesidad de controlar mejor tu desarrollo?
+### ¿Has sentido que el flujo de desarrollo es asfixiante? ¿sientes la necesidad de controlar mejor el desarrollo de componentes de frontend?
 Este repositorio contiene un conjunto de componetes para ser utilizados en una página de landing. El proyecto también puede ser usado para desarrollar elementos de Frontend de una manera más controlada.
 
 ## 🛠️ Tecnologías
