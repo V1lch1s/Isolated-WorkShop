@@ -214,7 +214,7 @@ const StickyFeatureShowcase: React.FC<StickyShowcaseProps> = ({
             {/* === Video (columna derecha del grid) === */}
             <div className="w-full aspect-video rounded-lg overflow-hidden">
               {active.media.desktop.type === "video" ? (
-                <iframe
+                /*<iframe
                   key={`video-${activeIndex}`} // Forzar re-render con índice único
                   src={active.media.desktop.src.includes('?')
                     ? `${active.media.desktop.src}&autoplay=1` // &mute=1
@@ -223,8 +223,8 @@ const StickyFeatureShowcase: React.FC<StickyShowcaseProps> = ({
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                   className="w-full h-full border-0"
-                />
-                /*<video
+                /> */
+                <video
                   key={active.id} // Para reiniciar el video al cambiar de Feature
                   autoPlay
                   muted
